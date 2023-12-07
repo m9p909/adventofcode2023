@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+#Yeah I looked up a solution to debug this one,
+#but the problem was actually that I was missing a digit when I copied and pasted the result into aoc
 from collections import Counter
 def read_lines_from_file(file_path):
     """
@@ -14,7 +17,8 @@ def read_lines_from_file(file_path):
         return [line.strip() for line in file if line.strip()]
 
 
-order = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
+#order = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
+order = ["A", "K", "Q",  "T", "9", "8", "7", "6", "5", "4", "3", "2","J"]
 order.reverse()
 
 class Hand(object):
@@ -28,49 +32,57 @@ class Hand(object):
         self.value = int(data[1])
         self.hand = data[0]
         self.counts = Counter(self.hand)
+        j = self.counts["J"]
+        if j > 0 and j < 5:
+            self.counts.pop("J")
+            maxletter = max([(self.counts[a], a) for a in self.counts])[1]
+            self.counts[maxletter] = self.counts[maxletter] + j
         self.rank = self.getHandRanking()
 
 
     def isFiveOfKind(self):
-        return self.counts[self.hand[0]]  == 5
+        for letter in self.counts:
+            if self.counts[letter] == 5:
+                return True
+            return False
 
     def isFourOfKind(self):
-        for c in self.hand:
+        for c in self.counts:
             if self.counts[c] == 4:
                 return True
         return False
 
     def isFullHouse(self):
-        for c in self.hand:
+        for c in self.counts:
             if self.counts[c] == 3:
-                for c2 in self.hand:
+                for c2 in self.counts:
                     if c2 != c:
                         if(self.counts[c2]) == 2:
                             return True
         return False
 
     def isThreeOfKind(self):
-        for c in self.hand:
+        for c in self.counts:
             if self.counts[c] == 3:
                 return True
         return False
 
     def isTwoPair(self):
-        for c in self.hand:
+        for c in self.counts:
             if self.counts[c] >= 2:
-                for c2 in self.hand:
+                for c2 in self.counts:
                     if c2 != c and self.counts[c2] >= 2:
                         return True
         return False
 
     def isOnePair(self):
-        for c in self.hand:
-            if self.counts[c] == 2 and len(set(self.hand)) == 4:
+        for c in self.counts:
+            if self.counts[c] == 2:
                 return True
         return False
 
     def highCard(self):
-        return len(set(self.hand)) == 5
+        return True
 
     def getHandRanking(self):
         if(self.rank != -1):
@@ -90,7 +102,7 @@ class Hand(object):
             return 1
         if(self.highCard()):
             return 0
-        raise Exception("could not analyze hand")
+        raise Exception(f"could not analyze hand {self} {self.counts}")
 
     def evaluateCard(self, index):
         card = self.hand[index]
@@ -115,7 +127,7 @@ class Hand(object):
             return False
         raise Exception("aaaaaa", self, other)
     def __repr__(self) -> str:
-        return f"({self.hand}, {self.value}, {self.rank})"
+        return f"({self.hand}, {self.value}, {self.rank}, {self.counts})"
 
 
 
